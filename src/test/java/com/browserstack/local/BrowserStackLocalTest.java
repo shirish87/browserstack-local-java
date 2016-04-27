@@ -1,13 +1,7 @@
 package com.browserstack.local;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class BrowserStackLocalTest {
@@ -29,17 +23,21 @@ public class BrowserStackLocalTest {
     }
 
     @Test
-    public void testMultipleBinary() throws Exception {
-        l.start(options);
-        assertTrue(l.isRunning());
-        Local l2 = new Local();
+    public void testItWorks() {
         try {
-            l2.start(options);
-        } catch (LocalException e) {
-            assertFalse(l2.isRunning());
+            BrowserStackLocal l = new BrowserStackLocal(System.getenv("BROWSERSTACK_KEY"));
+            l.setForce(true);
+            System.out.println(l.start());
+            Thread.sleep(3000);
+            System.out.println(l.stop());
+        } catch (BrowserStackLocalException e) {
+            assertTrue(false);
+        } catch (InterruptedException e) {
+            assertTrue(false);
         }
     }
 
+<<<<<<< HEAD
     @Test
     public void testEnableVerbose() throws Exception {
         options.put("v", "true");

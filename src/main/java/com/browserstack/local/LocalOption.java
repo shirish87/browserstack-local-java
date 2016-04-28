@@ -8,10 +8,11 @@ import java.util.Set;
 
 public class LocalOption {
 
-    public static final String[] DAEMON_START = new String[] { "-d", "start" };
-    public static final String[] DAEMON_STOP = new String[] { "-d", "stop" };
+    public static final String[] DAEMON_START = new String[]{"-d", "start"};
+    public static final String[] DAEMON_STOP = new String[]{"-d", "stop"};
 
     private static final Map<LocalFlag, String> argFlags = new HashMap<LocalFlag, String>();
+
     static {
         argFlags.put(LocalFlag.VERBOSE, "vvv");
         argFlags.put(LocalFlag.FOLDER_TESTING, "f");
@@ -28,14 +29,10 @@ public class LocalOption {
         argFlags.put(LocalFlag.HOSTS, "hosts");
     }
 
-    private final String optName;
-
-    private final String optValue;
-
     public final String arg;
-
     public final String[] argList;
-
+    private final String optName;
+    private final String optValue;
     private LocalFlag localFlag;
 
     private LocalOption(String optName, String optValue, boolean requiresName, boolean requiresValue) {
@@ -67,31 +64,6 @@ public class LocalOption {
         this.localFlag = LocalFlag.UNDEFINED;
     }
 
-    public LocalFlag getLocalFlag() {
-        return localFlag;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        LocalOption that = (LocalOption) o;
-        return !(arg != null ? !arg.equals(that.arg) : that.arg != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        return arg != null ? arg.hashCode() : 0;
-    }
-
-    @Override
-    public String toString() {
-        return arg;
-    }
-
-
     public static void unsetOption(Set<LocalOption> options, LocalFlag localFlag) {
         Iterator<LocalOption> iterator = options.iterator();
         while (iterator.hasNext()) {
@@ -122,13 +94,37 @@ public class LocalOption {
 
         if (!option.optName.isEmpty() && option.optValue.isEmpty()) {
             // -vvv
-            return new String[] { "-" + option.optName };
+            return new String[]{"-" + option.optName};
         } else if (option.optName.isEmpty() && !option.optValue.isEmpty()) {
             // <access-key>
-            return new String[] { option.optValue };
+            return new String[]{option.optValue};
         }
 
         // -f <path>
-        return new String[] { "-" + option.optName, option.optValue };
+        return new String[]{"-" + option.optName, option.optValue};
+    }
+
+    public LocalFlag getLocalFlag() {
+        return localFlag;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        LocalOption that = (LocalOption) o;
+        return !(arg != null ? !arg.equals(that.arg) : that.arg != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return arg != null ? arg.hashCode() : 0;
+    }
+
+    @Override
+    public String toString() {
+        return arg;
     }
 }

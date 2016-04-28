@@ -25,12 +25,16 @@ public class BrowserStackLocalTest {
     @Test
     public void testItWorks() {
         try {
-            BrowserStackLocal l = new BrowserStackLocal(System.getenv("BROWSERSTACK_KEY"));
-            l.setForce(true);
-            System.out.println(l.start());
-            Thread.sleep(3000);
-            System.out.println(l.stop());
+            BrowserStackLocalLauncher launcher = new BrowserStackLocal(System.getenv("BROWSERSTACK_KEY"))
+                    .setForce(true)
+                    .setForceLocal(true)
+                    .setVerbose(true)
+                    .start();
+
+            Thread.sleep(2000);
+            launcher.stop();
         } catch (BrowserStackLocalException e) {
+            System.out.println("ERRR: " + e.getMessage());
             assertTrue(false);
         } catch (InterruptedException e) {
             assertTrue(false);

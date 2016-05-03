@@ -50,6 +50,11 @@ public class BrowserStackLocal {
         return this;
     }
 
+    public BrowserStackLocal setOnly(String target) {
+        launcher.getOptions().add(new LocalOption(LocalFlag.ONLY, target));
+        return this;
+    }
+
     public BrowserStackLocal setOnlyAutomate(boolean enable) {
         LocalOption.toggleFlag(launcher.getOptions(), LocalFlag.ONLY_AUTOMATE, enable);
         return this;

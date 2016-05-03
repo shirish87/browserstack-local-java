@@ -91,7 +91,13 @@ public class BrowserStackLocalTest {
     public void testOptionForceLocal() {
         try {
             BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+                    .setLocalIdentifier("server-1")
+                    .setForce(true)
+                    .setOnlyAutomate(true)
                     .setForceLocal(true)
+                    .setOnly("localhost,3000")
+                    .setProxy("proxy.example.com", 3128, "username", "password")
+                    .setHosts("localhost,3000,0")
                     .start();
 
             assertOption(launcher, "-forcelocal", true);
@@ -123,6 +129,20 @@ public class BrowserStackLocalTest {
                     .start();
 
             assertOption(launcher, "-onlyAutomate", true);
+            launcher.stop();
+        } catch (BrowserStackLocalException e) {
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testOptionOnly() {
+        try {
+            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+                    .setOnly("localhost,3000,0")
+                    .start();
+
+            assertOption(launcher, "-only localhost,3000,0", true);
             launcher.stop();
         } catch (BrowserStackLocalException e) {
             assertTrue(false);

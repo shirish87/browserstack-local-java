@@ -1,37 +1,28 @@
-# browserstack-local-java
+# BrowserStackLocal for Java
 
 [![Build Status](https://travis-ci.org/browserstack/browserstack-local-java.svg?branch=master)](https://travis-ci.org/browserstack/browserstack-local-java)
 
-Java bindings for BrowserStack Local.
+Launches [BrowserStackLocal](https://www.browserstack.com/local-testing) tunnels enabling access to local web servers and file folders from [BrowserStack](https://www.browserstack.com).
 
-## Installation
-```
-mvn install browserstack-local
-```
 
-## Example
+## Usage
 
-```
-import com.browserstack.local.Local;
-
-# creates an instance of Local
-Local bsLocal = new Local();
-
-# replace <browserstack-accesskey> with your key. You can also set an environment variable - "BROWSERSTACK_ACCESS_KEY".
-HashMap<String, String> bsLocalArgs = new HashMap<String, String>();
-bsLocalArgs.put("key", "<browserstack-accesskey>");
-
-# starts the Local instance with the required arguments
-bsLocal.start(bsLocalArgs);
-
-# check if BrowserStack local instance is running
-System.out.println(bsLocal.isRunning());
-
-#stop the Local instance
-bsLocal.stop();
+``` java
+BrowserStackLocalLauncher launcher = new BrowserStackLocal("<browserstack-accesskey>")
+    .setLocalIdentifier("ci-build-1")      // Unique ID distinguishing multiple simultaneous local testing connections
+    .setForce(true)                        // Kill other running BrowserstackLocal instances before launch
+    .setOnlyAutomate(true)                 // Disable Live Testing and Screenshots, just test Automate
+    .setForceLocal(true)                   // Route all traffic via local machine
+    .setOnly("localhost,3000,0")             // Restrict Local Testing access to specified local servers and/or folders
+    .setHosts("localhost,3000,0")          // List of hosts and ports where Local must be enabled for e.g. localhost,3000,1,localhost,3001,0
+    .setProxy("proxy.example.com", 3128, "username", "password")  // (optional) Network proxy used to access www.browserstack.com
+    .start();
 ```
 
-## Arguments
+```
+// Terminate BrowserStackLocal
+launcher.stop();
+```
 
 Apart from the key, all other BrowserStack Local modifiers are optional. For the full list of modifiers, refer [BrowserStack Local modifiers](https://www.browserstack.com/local-testing#modifiers). For examples, refer below -
 

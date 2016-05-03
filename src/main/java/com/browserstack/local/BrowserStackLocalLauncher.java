@@ -7,9 +7,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
-class BrowserStackLocalLauncher {
+public class BrowserStackLocalLauncher {
+    public static final String BIN_BASENAME = "BrowserStackLocal";
     private static final String BIN_URL = "https://s3.amazonaws.com/browserStack/browserstack-local/";
-    private static final String BIN_BASENAME = "BrowserStackLocal";
 
     private static final String OS_NAME = System.getProperty("os.name", "").toLowerCase();
     private static final boolean IS_OS_WINDOWS = OS_NAME.contains("windows");
@@ -24,6 +24,7 @@ class BrowserStackLocalLauncher {
     private static final int DEFAULT_STOP_EXEC_TIMEOUT = 20;
 
     private final Set<LocalOption> options = new HashSet<LocalOption>();
+    private final List<String> extraOptions = new ArrayList<String>();
 
     private final String accessKey;
 
@@ -34,7 +35,11 @@ class BrowserStackLocalLauncher {
 
     private long startExecutionTimeout;
 
-    BrowserStackLocalLauncher(String accessKey, String binaryHome) throws BrowserStackLocalException {
+    private BrowserStackLocalCmdResult startResult;
+    private boolean isStopped;
+
+
+    protected BrowserStackLocalLauncher(String accessKey, String binaryHome) throws BrowserStackLocalException {
         if (accessKey == null || accessKey.trim().isEmpty()) {
             throw new BrowserStackLocalException("Access key required.");
         }
@@ -54,8 +59,107 @@ class BrowserStackLocalLauncher {
         this.startExecutionTimeout = DEFAULT_START_EXEC_TIMEOUT;
     }
 
-    BrowserStackLocalLauncher(String accessKey) throws BrowserStackLocalException {
+    protected BrowserStackLocalLauncher(String accessKey) throws BrowserStackLocalException {
         this(accessKey, null);
+    }
+
+    protected BrowserStackLocalLauncher start() throws BrowserStackLocalException {
+        if (!binExists()) {
+            FileUtil.downloadFile(downloadUrl, binHome.getAbsolutePath(), binFilename);
+        }
+
+        try {
+            startResult = this.run(buildCommand(LocalOption.DAEMON_START));
+        } catch (IOException e) {
+            if (e instanceof BrowserStackLocalException) {
+                throw (BrowserStackLocalException) e;
+            } else {
+                throw new BrowserStackLocalException(e.getMessage());
+            }
+        }
+
+        if (startResult != null && !startResult.checkConnected()) {
+            throw new BrowserStackLocalException(startResult.message);
+        }
+
+        return this;
+    }
+
+    protected BrowserStackLocalCmdResult run(String[] commandLine) throws IOException {
+        try {
+            return PlatformUtil.execCommand(commandLine, startExecutionTimeout);
+        } catch (IOException e) {
+            if (e instanceof BrowserStackLocalException) {
+                throw e;
+            } else {
+                throw new BrowserStackLocalException(e.getMessage());
+            }
+        }
+    }
+
+    public BrowserStackLocalCmdResult stop() throws BrowserStackLocalException {
+        checkState();
+
+        try {
+            BrowserStackLocalCmdResult result = PlatformUtil.execCommand(buildCommand(LocalOption.DAEMON_STOP), DEFAULT_STOP_EXEC_TIMEOUT);
+            isStopped = result.checkSuccessful();
+            return result;
+        } catch (IOException e) {
+            if (e instanceof BrowserStackLocalException) {
+                throw (BrowserStackLocalException) e;
+            } else {
+                throw new BrowserStackLocalException(e.getMessage());
+            }
+        }
+    }
+
+    public BrowserStackLocalCmdResult getLaunchResult() {
+        checkState();
+        return startResult;
+    }
+
+    public boolean isStopped() {
+        return (startResult == null || isStopped);
+    }
+
+    protected void checkState() {
+        if (isStopped()) {
+            throw new IllegalStateException("BrowserStackLocal not running");
+        }
+    }
+
+    protected boolean binExists() {
+        return (binFile.exists() && binFile.isFile());
+    }
+
+    protected void setExecutionTimeout(long executionTimeout) {
+        this.startExecutionTimeout = executionTimeout;
+    }
+
+    protected Set<LocalOption> getOptions() {
+        return options;
+    }
+
+    protected boolean appendArgument(String argument) {
+        if (argument != null && !extraOptions.contains(argument)) {
+            return extraOptions.add(argument);
+        }
+
+        return false;
+    }
+
+    protected String[] buildCommand(String[] daemonCommand) {
+        List<String> commandParts = new ArrayList<String>();
+        commandParts.add(binFile.getAbsolutePath());
+        commandParts.add(accessKey);
+        Collections.addAll(commandParts, daemonCommand);
+
+        for (LocalOption lo : options) {
+            Collections.addAll(commandParts, lo.argList);
+        }
+
+        commandParts.addAll(extraOptions);
+        return commandParts.toArray(new String[commandParts.size()]);
     }
 
     private static String getBinaryFilename() throws BrowserStackLocalException {
@@ -69,57 +173,5 @@ class BrowserStackLocalLauncher {
         } else {
             throw new BrowserStackLocalException("Unsupported operating system: " + OS_NAME);
         }
-    }
-
-    BrowserStackLocalLauncher start() throws BrowserStackLocalException {
-        if (!binExists()) {
-            FileUtil.downloadFile(downloadUrl, binHome.getAbsolutePath(), binFilename);
-        }
-
-        final BrowserStackLocalCmdResult result;
-        try {
-            result = PlatformUtil.execCommand(buildCommand(LocalOption.DAEMON_START), startExecutionTimeout);
-        } catch (IOException e) {
-            throw new BrowserStackLocalException(e.getMessage());
-        }
-
-        if (result != null && !result.checkConnected()) {
-            throw new BrowserStackLocalException(result.message);
-        }
-
-        return this;
-    }
-
-    public BrowserStackLocalCmdResult stop() throws BrowserStackLocalException {
-        try {
-            return PlatformUtil.execCommand(buildCommand(LocalOption.DAEMON_STOP), DEFAULT_STOP_EXEC_TIMEOUT);
-        } catch (IOException e) {
-            throw new BrowserStackLocalException(e.getMessage());
-        }
-    }
-
-    private boolean binExists() {
-        return (binFile.exists() && binFile.isFile());
-    }
-
-    void setExecutionTimeout(long executionTimeout) {
-        this.startExecutionTimeout = executionTimeout;
-    }
-
-    Set<LocalOption> getOptions() {
-        return options;
-    }
-
-    protected String[] buildCommand(String[] daemonCommand) {
-        List<String> commandParts = new ArrayList<String>();
-        commandParts.add(binFile.getAbsolutePath());
-        commandParts.add(accessKey);
-        Collections.addAll(commandParts, daemonCommand);
-
-        for (LocalOption lo : options) {
-            Collections.addAll(commandParts, lo.argList);
-        }
-
-        return commandParts.toArray(new String[commandParts.size()]);
     }
 }

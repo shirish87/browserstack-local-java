@@ -15,9 +15,10 @@ public class PlatformUtil {
     private static final String STATUS_SUCCESS = "success";
     private static final boolean DEBUG = false;
 
+    private static final int THREAD_JOIN_TIMEOUT = 500;
+
     public synchronized static BrowserStackLocalCmdResult execCommand(final String[] command,
                                                                       final long executionTimeout) throws IOException {
-
         final BrowserStackLocalException[] exceptions = new BrowserStackLocalException[1];
         final String[] results = new String[1];
 
@@ -29,7 +30,6 @@ public class PlatformUtil {
             public void run() {
                 try {
                     results[0] = readStreamUntilEnd(process, process.getInputStream());
-
                     if (DEBUG) {
                         System.out.println("STDOUT: " + results[0]);
                     }
@@ -55,7 +55,7 @@ public class PlatformUtil {
                     if (output.contains(STATUS_SUCCESS)) {
                         results[0] = output;
                     } else if (exceptions[0] == null && !output.isEmpty()) {
-                        throw new BrowserStackLocalException(output);
+                        exceptions[0] = new BrowserStackLocalException(output, true);
                     }
                 } catch (IOException e) {
                     if (DEBUG) {
@@ -78,10 +78,10 @@ public class PlatformUtil {
 
         try {
             streamInpThread.interrupt();
-            streamInpThread.join(500);
+            streamInpThread.join(THREAD_JOIN_TIMEOUT);
 
             streamErrThread.interrupt();
-            streamErrThread.join(500);
+            streamErrThread.join(THREAD_JOIN_TIMEOUT);
         } catch (InterruptedException e) {
             // ignore
 
@@ -90,7 +90,7 @@ public class PlatformUtil {
             }
         }
 
-        if (results[0] != null) {
+        if (results[0] != null && results[0].trim().length() > 0) {
             return new BrowserStackLocalCmdResult(results[0]);
         } else if (exceptions[0] != null) {
             throw exceptions[0];
@@ -100,7 +100,7 @@ public class PlatformUtil {
     }
 
 
-    private static String readStreamUntilEnd(final Process process, final InputStream inputStream) throws IOException {
+    public static String readStreamUntilEnd(final Process process, final InputStream inputStream) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder builder = new StringBuilder();
         String line;

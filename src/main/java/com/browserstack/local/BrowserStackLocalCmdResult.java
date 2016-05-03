@@ -30,6 +30,10 @@ public class BrowserStackLocalCmdResult {
         return (state != null && state.equals("connected"));
     }
 
+    public boolean checkSuccessful() {
+        return (status != null && status.equals("success"));
+    }
+
     @Override
     public String toString() {
         return rawOutput;

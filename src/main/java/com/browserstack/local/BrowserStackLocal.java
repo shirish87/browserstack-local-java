@@ -5,12 +5,20 @@ public class BrowserStackLocal {
 
     private final BrowserStackLocalLauncher launcher;
 
+    protected BrowserStackLocal(BrowserStackLocalLauncher localLauncher) throws BrowserStackLocalException {
+        if (localLauncher == null) {
+            throw new IllegalArgumentException("Missing launcher");
+        }
+
+        this.launcher = localLauncher;
+    }
+
     public BrowserStackLocal(String accessKey, String binaryHome) throws BrowserStackLocalException {
-        launcher = new BrowserStackLocalLauncher(accessKey, binaryHome);
+        this(new BrowserStackLocalLauncher(accessKey, binaryHome));
     }
 
     public BrowserStackLocal(String accessKey) throws BrowserStackLocalException {
-        launcher = new BrowserStackLocalLauncher(accessKey);
+        this(new BrowserStackLocalLauncher(accessKey));
     }
 
     public BrowserStackLocalLauncher start() throws BrowserStackLocalException {
@@ -47,26 +55,26 @@ public class BrowserStackLocal {
         return this;
     }
 
-    public BrowserStackLocal setProxy(String host, String port) {
+    public BrowserStackLocal setProxy(String host, int port) {
         launcher.getOptions().add(new LocalOption(LocalFlag.PROXY_HOST, host));
-        launcher.getOptions().add(new LocalOption(LocalFlag.PROXY_PORT, port));
+        launcher.getOptions().add(new LocalOption(LocalFlag.PROXY_PORT, port + ""));
         return this;
     }
 
-    public BrowserStackLocal setProxy(String host, String port, boolean forceProxy) {
+    public BrowserStackLocal setProxy(String host, int port, boolean forceProxy) {
         setProxy(host, port);
         LocalOption.toggleFlag(launcher.getOptions(), LocalFlag.FORCE_PROXY, forceProxy);
         return this;
     }
 
-    public BrowserStackLocal setProxy(String host, String port, String username, String password) {
+    public BrowserStackLocal setProxy(String host, int port, String username, String password) {
         setProxy(host, port);
         launcher.getOptions().add(new LocalOption(LocalFlag.PROXY_USER, username));
         launcher.getOptions().add(new LocalOption(LocalFlag.PROXY_PASS, password));
         return this;
     }
 
-    public BrowserStackLocal setProxy(String host, String port, String username, String password, boolean forceProxy) {
+    public BrowserStackLocal setProxy(String host, int port, String username, String password, boolean forceProxy) {
         setProxy(host, port, username, password);
         LocalOption.toggleFlag(launcher.getOptions(), LocalFlag.FORCE_PROXY, forceProxy);
         return this;
@@ -79,6 +87,11 @@ public class BrowserStackLocal {
 
     public BrowserStackLocal setHosts(String hosts) {
         launcher.getOptions().add(new LocalOption(LocalFlag.HOSTS, hosts));
+        return this;
+    }
+
+    public BrowserStackLocal appendArgument(String argument) {
+        launcher.appendArgument(argument);
         return this;
     }
 }

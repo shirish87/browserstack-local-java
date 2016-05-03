@@ -26,6 +26,7 @@ launcher.stop();
 
 Apart from the key, all other BrowserStack Local modifiers are optional. For the full list of modifiers, refer [BrowserStack Local modifiers](https://www.browserstack.com/local-testing#modifiers). For examples, refer below -
 
+<<<<<<< HEAD
 #### Verbose Logging
 To enable verbose logging -
 ```

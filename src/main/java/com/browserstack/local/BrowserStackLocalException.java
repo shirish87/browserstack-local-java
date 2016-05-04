@@ -20,7 +20,6 @@ public class BrowserStackLocalException extends IOException {
                 result = new BrowserStackLocalCmdResult(message);
             } catch (BrowserStackLocalException e) {
                 // ignore
-                e.printStackTrace();
             }
         }
     }

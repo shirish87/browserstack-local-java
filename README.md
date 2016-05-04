@@ -8,9 +8,9 @@ Launches [BrowserStackLocal](https://www.browserstack.com/local-testing) tunnels
 ## Usage
 
 ``` java
-BrowserStackLocalLauncher launcher = new BrowserStackLocal("<browserstack-accesskey>")
+BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher("<browserstack-accesskey>")
     .setLocalIdentifier("ci-build-1")      // Unique ID distinguishing multiple simultaneous local testing connections
-    .setForce(true)                        // Kill other running BrowserstackLocal instances before launch
+    .setForce(true)                        // Kill other running BrowserStackLocal instances before launch
     .setOnlyAutomate(true)                 // Disable Live Testing and Screenshots, just test Automate
     .setForceLocal(true)                   // Route all traffic via local machine
     .setOnly("localhost,3000,0")           // Restrict Local Testing access to specified local servers and/or folders
@@ -21,7 +21,7 @@ BrowserStackLocalLauncher launcher = new BrowserStackLocal("<browserstack-access
 
 ```
 // Terminate BrowserStackLocal
-launcher.stop();
+browserstackLocal.stop();
 ```
 
 Apart from the key, all other BrowserStack Local modifiers are optional. For the full list of modifiers, refer [BrowserStack Local modifiers](https://www.browserstack.com/local-testing#modifiers). For examples, refer below -

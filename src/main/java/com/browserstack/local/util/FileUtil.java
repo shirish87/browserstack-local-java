@@ -6,11 +6,12 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 
 public class FileUtil {
 
-    public static File getDownloadDestination(final String[] destPaths, final String destFilename) {
+    public static File getDownloadDestination(final List<String> destPaths, final String destFilename) {
         for (String path : destPaths) {
             if (setupPaths(path, destFilename)) {
                 return new File(path, destFilename);

@@ -91,18 +91,16 @@ public class PlatformUtil {
         }
 
         try {
-            streamOutThread.interrupt();
             streamOutThread.join(THREAD_JOIN_TIMEOUT);
-
-            streamErrThread.interrupt();
             streamErrThread.join(THREAD_JOIN_TIMEOUT);
         } catch (InterruptedException e) {
-            // ignore
-
             if (DEBUG) {
                 System.err.println(e.getMessage());
             }
         }
+
+        streamOutThread.interrupt();
+        streamErrThread.interrupt();
 
         if (results[0] != null && results[0].trim().length() > 0) {
             return new BrowserStackLocalCmdResult(results[0]);
@@ -126,14 +124,23 @@ public class PlatformUtil {
 
             @Override
             public boolean isAlive() throws IOException {
-                return (process != null && process.isAlive());
+                if (process != null) {
+                    try {
+                        process.exitValue();
+                        return false;
+                    } catch (IllegalThreadStateException e) {
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
             @Override
             public void join(long executionTimeout, TimeUnit timeUnit) throws IOException {
                 if (process != null) {
                     try {
-                        process.waitFor(executionTimeout, timeUnit);
+                        waitFor(process, executionTimeout, timeUnit);
                     } catch (InterruptedException e) {
                         kill();
                     }
@@ -143,7 +150,7 @@ public class PlatformUtil {
             @Override
             public void kill() throws IOException {
                 if (process != null) {
-                    process.destroyForcibly();
+                    process.destroy();
                 }
             }
 
@@ -170,5 +177,24 @@ public class PlatformUtil {
         }
 
         return builder.toString();
+    }
+
+    public static boolean waitFor(Process process, long timeout, TimeUnit unit) throws InterruptedException {
+        long startTime = System.nanoTime();
+        long rem = unit.toNanos(timeout);
+
+        do {
+            try {
+                process.exitValue();
+                return true;
+            } catch (IllegalThreadStateException ex) {
+                if (rem > 0) {
+                    Thread.sleep(Math.min(TimeUnit.NANOSECONDS.toMillis(rem) + 1, 100));
+                }
+            }
+
+            rem = unit.toNanos(timeout) - (System.nanoTime() - startTime);
+        } while (rem > 0);
+        return false;
     }
 }

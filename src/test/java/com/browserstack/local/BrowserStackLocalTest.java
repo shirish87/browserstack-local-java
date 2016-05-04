@@ -41,9 +41,9 @@ public class BrowserStackLocalTest {
         Runtime rt = Runtime.getRuntime();
         try {
             if (System.getProperty("os.name").toLowerCase().contains("windows")) {
-                rt.exec("taskkill /F /IM " + BrowserStackLocalLauncher.BIN_BASENAME + ".exe");
+                rt.exec("taskkill /F /IM " + BrowserStackLocal.BIN_BASENAME + ".exe");
             } else {
-                rt.exec("killall -9 " + BrowserStackLocalLauncher.BIN_BASENAME);
+                rt.exec("killall -9 " + BrowserStackLocal.BIN_BASENAME);
             }
 
             Thread.sleep(300);
@@ -55,17 +55,17 @@ public class BrowserStackLocalTest {
     @Test
     public void testStartStop() {
         try {
-            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey).start();
-            assertFalse(launcher.isStopped());
-            assertTrue(launcher.getLaunchResult().pid > 0);
-            assertTrue(launcher.getLaunchResult().checkConnected());
+            BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher(accessKey).start();
+            assertFalse(browserstackLocal.isStopped());
+            assertTrue(browserstackLocal.getLaunchResult().pid > 0);
+            assertTrue(browserstackLocal.getLaunchResult().checkConnected());
 
-            BrowserStackLocalCmdResult stopResult = launcher.stop();
+            BrowserStackLocalCmdResult stopResult = browserstackLocal.stop();
             assertTrue(stopResult.checkSuccessful());
-            assertTrue(launcher.isStopped());
+            assertTrue(browserstackLocal.isStopped());
 
             try {
-                launcher.stop();
+                browserstackLocal.stop();
             } catch (IllegalStateException e) {
                 assertTrue(true);
             }
@@ -78,12 +78,12 @@ public class BrowserStackLocalTest {
     @Test
     public void testOptionForce() {
         try {
-            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+            BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher(accessKey)
                     .setForce(true)
                     .start();
 
-            assertOption(launcher, "-force", true);
-            launcher.stop();
+            assertOption(browserstackLocal, "-force", true);
+            browserstackLocal.stop();
         } catch (BrowserStackLocalException e) {
             assertTrue(false);
         }
@@ -92,12 +92,12 @@ public class BrowserStackLocalTest {
     @Test
     public void testOptionForceLocal() {
         try {
-            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+            BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher(accessKey)
                     .setForceLocal(true)
                     .start();
 
-            assertOption(launcher, "-forcelocal", true);
-            launcher.stop();
+            assertOption(browserstackLocal, "-forcelocal", true);
+            browserstackLocal.stop();
         } catch (BrowserStackLocalException e) {
             assertTrue(false);
         }
@@ -106,12 +106,12 @@ public class BrowserStackLocalTest {
     @Test
     public void testOptionLocalIdentifier() {
         try {
-            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+            BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher(accessKey)
                     .setLocalIdentifier("123")
                     .start();
 
-            assertOption(launcher, "-localIdentifier 123", true);
-            launcher.stop();
+            assertOption(browserstackLocal, "-localIdentifier 123", true);
+            browserstackLocal.stop();
         } catch (BrowserStackLocalException e) {
             assertTrue(false);
         }
@@ -120,12 +120,12 @@ public class BrowserStackLocalTest {
     @Test
     public void testOptionOnlyAutomate() {
         try {
-            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+            BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher(accessKey)
                     .setOnlyAutomate(true)
                     .start();
 
-            assertOption(launcher, "-onlyAutomate", true);
-            launcher.stop();
+            assertOption(browserstackLocal, "-onlyAutomate", true);
+            browserstackLocal.stop();
         } catch (BrowserStackLocalException e) {
             assertTrue(false);
         }
@@ -134,12 +134,12 @@ public class BrowserStackLocalTest {
     @Test
     public void testOptionOnly() {
         try {
-            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+            BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher(accessKey)
                     .setOnly("localhost,3000,0")
                     .start();
 
-            assertOption(launcher, "-only localhost,3000,0", true);
-            launcher.stop();
+            assertOption(browserstackLocal, "-only localhost,3000,0", true);
+            browserstackLocal.stop();
         } catch (BrowserStackLocalException e) {
             assertTrue(false);
         }
@@ -150,12 +150,12 @@ public class BrowserStackLocalTest {
         String localFolder = System.getProperty("user.home");
 
         try {
-            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+            BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher(accessKey)
                     .setFolderTestingPath(localFolder)
                     .start();
 
-            assertOption(launcher, "-f " + localFolder, true);
-            launcher.stop();
+            assertOption(browserstackLocal, "-f " + localFolder, true);
+            browserstackLocal.stop();
         } catch (BrowserStackLocalException e) {
             assertTrue(false);
         }
@@ -164,12 +164,12 @@ public class BrowserStackLocalTest {
     @Test
     public void testOptionExtra() {
         try {
-            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+            BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher(accessKey)
                     .appendArgument("-vvv")
                     .start();
 
-            assertOption(launcher, "-vvv", true);
-            launcher.stop();
+            assertOption(browserstackLocal, "-vvv", true);
+            browserstackLocal.stop();
         } catch (BrowserStackLocalException e) {
             assertTrue(false);
         }
@@ -178,26 +178,26 @@ public class BrowserStackLocalTest {
     @Test
     public void testOptionProxy() {
         try {
-            BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
+            BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher(accessKey)
                     .setProxy("localhost", 3128, "username", "password")
                     .start();
 
-            String commandLine = Arrays.toString(launcher.buildCommand(LocalOption.DAEMON_START));
+            String commandLine = Arrays.toString(browserstackLocal.buildCommand(LocalOption.DAEMON_START));
             assertTrue(commandLine.contains("-proxyHost localhost"));
             assertTrue(commandLine.contains("-proxyPort 3128"));
             assertTrue(commandLine.contains("-proxyUser username"));
             assertTrue(commandLine.contains("-proxyPass password"));
 
-            launcher.stop();
+            browserstackLocal.stop();
         } catch (BrowserStackLocalException e) {
             assertTrue(e.hasResult());
             assertTrue(e.getResult().message.contains("Could not connect"));
         }
     }
 
-    private static void assertOption(BrowserStackLocalLauncher launcher, String matchOption, boolean checkStarted) {
+    private static void assertOption(BrowserStackLocal browserstackLocal, String matchOption, boolean checkStarted) {
         StringBuilder sb = new StringBuilder();
-        for (String arg : launcher.buildCommand(LocalOption.DAEMON_START)) {
+        for (String arg : browserstackLocal.buildCommand(LocalOption.DAEMON_START)) {
             sb.append(" ").append(arg);
         }
 
@@ -205,10 +205,10 @@ public class BrowserStackLocalTest {
         assertTrue(commandLine.contains(" " + accessKey));
         assertTrue(commandLine.contains(" " + matchOption));
 
-        assertTrue(launcher.getLaunchResult().pid > 0);
+        assertTrue(browserstackLocal.getLaunchResult().pid > 0);
 
         if (checkStarted) {
-            assertTrue(launcher.getLaunchResult().checkConnected());
+            assertTrue(browserstackLocal.getLaunchResult().checkConnected());
         }
     }
 }

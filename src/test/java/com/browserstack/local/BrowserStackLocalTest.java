@@ -1,5 +1,6 @@
 package com.browserstack.local;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -35,16 +36,17 @@ public class BrowserStackLocalTest {
     }
 
     @Before
+    @After
     public void killBrowserStackLocal() {
         Runtime rt = Runtime.getRuntime();
         try {
             if (System.getProperty("os.name").toLowerCase().contains("windows")) {
                 rt.exec("taskkill /F /IM " + BrowserStackLocalLauncher.BIN_BASENAME + ".exe");
             } else {
-                rt.exec("kill -9 " + BrowserStackLocalLauncher.BIN_BASENAME);
+                rt.exec("killall -9 " + BrowserStackLocalLauncher.BIN_BASENAME);
             }
 
-            Thread.sleep(1000);
+            Thread.sleep(300);
         } catch (Exception e) {
             // ignore
         }

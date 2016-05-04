@@ -51,7 +51,9 @@ public class BrowserStackLocalLauncher {
         if (binaryHome != null && FileUtil.setupPaths(binaryHome, binFilename)) {
             binHome = new File(binaryHome, binFilename);
         } else {
-            binHome = FileUtil.getDownloadDestination(DEST_PATHS, binFilename);
+            String[] destPaths = getBinaryHomePaths();
+            destPaths = (destPaths != null) ? destPaths : DEST_PATHS;
+            binHome = FileUtil.getDownloadDestination(destPaths, binFilename);
         }
 
         this.downloadUrl = BIN_URL + getBinaryFilename();
@@ -69,7 +71,7 @@ public class BrowserStackLocalLauncher {
         }
 
         try {
-            startResult = this.run(buildCommand(LocalOption.DAEMON_START));
+            startResult = this.run(buildCommand(LocalOption.DAEMON_START), startExecutionTimeout);
         } catch (IOException e) {
             if (e instanceof BrowserStackLocalException) {
                 throw (BrowserStackLocalException) e;
@@ -85,9 +87,9 @@ public class BrowserStackLocalLauncher {
         return this;
     }
 
-    protected BrowserStackLocalCmdResult run(String[] commandLine) throws IOException {
+    protected BrowserStackLocalCmdResult run(String[] commandLine, long executionTimeout) throws IOException {
         try {
-            return PlatformUtil.execCommand(commandLine, startExecutionTimeout);
+            return PlatformUtil.execCommand(commandLine, executionTimeout);
         } catch (IOException e) {
             if (e instanceof BrowserStackLocalException) {
                 throw e;
@@ -101,7 +103,7 @@ public class BrowserStackLocalLauncher {
         checkState();
 
         try {
-            BrowserStackLocalCmdResult result = PlatformUtil.execCommand(buildCommand(LocalOption.DAEMON_STOP), DEFAULT_STOP_EXEC_TIMEOUT);
+            BrowserStackLocalCmdResult result = run(buildCommand(LocalOption.DAEMON_STOP), DEFAULT_STOP_EXEC_TIMEOUT);
             isStopped = result.checkSuccessful();
             return result;
         } catch (IOException e) {
@@ -132,6 +134,10 @@ public class BrowserStackLocalLauncher {
         return (binFile.exists() && binFile.isFile());
     }
 
+    protected long getStartExecutionTimeout() {
+        return startExecutionTimeout;
+    }
+
     protected void setExecutionTimeout(long executionTimeout) {
         this.startExecutionTimeout = executionTimeout;
     }
@@ -160,6 +166,11 @@ public class BrowserStackLocalLauncher {
 
         commandParts.addAll(extraOptions);
         return commandParts.toArray(new String[commandParts.size()]);
+    }
+
+    protected String[] getBinaryHomePaths() {
+        // Use default
+        return null;
     }
 
     private static String getBinaryFilename() throws BrowserStackLocalException {

@@ -17,19 +17,33 @@ public class PlatformUtil {
 
     private static final int THREAD_JOIN_TIMEOUT = 500;
 
-    public synchronized static BrowserStackLocalCmdResult execCommand(final String[] command,
+    public interface ProcessLauncher {
+        boolean isAlive() throws IOException;
+
+        void start(String[] command) throws IOException;
+
+        void join(long executionTimeout, TimeUnit timeUnit) throws IOException;
+
+        void kill() throws IOException;
+
+        InputStream stdout();
+
+        InputStream stderr();
+    }
+
+    public synchronized static BrowserStackLocalCmdResult execCommand(final ProcessLauncher process,
+                                                                      final String[] command,
                                                                       final long executionTimeout) throws IOException {
         final BrowserStackLocalException[] exceptions = new BrowserStackLocalException[1];
         final String[] results = new String[1];
 
-        final ProcessBuilder processBuilder = new ProcessBuilder(command);
-        final Process process = processBuilder.start();
+        process.start(command);
 
-        final Thread streamInpThread = new Thread(new Runnable() {
+        final Thread streamOutThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    results[0] = readStreamUntilEnd(process, process.getInputStream());
+                    results[0] = readStreamUntilEnd(process, process.stdout());
                     if (DEBUG) {
                         System.out.println("STDOUT: " + results[0]);
                     }
@@ -47,7 +61,7 @@ public class PlatformUtil {
             @Override
             public void run() {
                 try {
-                    String output = readStreamUntilEnd(process, process.getErrorStream());
+                    String output = readStreamUntilEnd(process, process.stderr());
                     if (DEBUG) {
                         System.out.println("STDERR: " + output);
                     }
@@ -67,18 +81,18 @@ public class PlatformUtil {
             }
         });
 
-        streamInpThread.start();
+        streamOutThread.start();
         streamErrThread.start();
 
         try {
-            process.waitFor(executionTimeout, TimeUnit.SECONDS);
+            process.join(executionTimeout, TimeUnit.SECONDS);
         } catch (Exception e) {
-            process.destroyForcibly();
+            process.kill();
         }
 
         try {
-            streamInpThread.interrupt();
-            streamInpThread.join(THREAD_JOIN_TIMEOUT);
+            streamOutThread.interrupt();
+            streamOutThread.join(THREAD_JOIN_TIMEOUT);
 
             streamErrThread.interrupt();
             streamErrThread.join(THREAD_JOIN_TIMEOUT);
@@ -100,12 +114,58 @@ public class PlatformUtil {
     }
 
 
-    public static String readStreamUntilEnd(final Process process, final InputStream inputStream) throws IOException {
+    public synchronized static BrowserStackLocalCmdResult execCommand(final String[] command,
+                                                                      final long executionTimeout) throws IOException {
+        return execCommand(new ProcessLauncher() {
+            private Process process;
+
+            @Override
+            public void start(String[] command) throws IOException {
+                process = new ProcessBuilder(command).start();
+            }
+
+            @Override
+            public boolean isAlive() throws IOException {
+                return (process != null && process.isAlive());
+            }
+
+            @Override
+            public void join(long executionTimeout, TimeUnit timeUnit) throws IOException {
+                if (process != null) {
+                    try {
+                        process.waitFor(executionTimeout, timeUnit);
+                    } catch (InterruptedException e) {
+                        kill();
+                    }
+                }
+            }
+
+            @Override
+            public void kill() throws IOException {
+                if (process != null) {
+                    process.destroyForcibly();
+                }
+            }
+
+            @Override
+            public InputStream stdout() {
+                return (process != null) ? process.getInputStream() : null;
+            }
+
+            @Override
+            public InputStream stderr() {
+                return (process != null) ? process.getErrorStream() : null;
+            }
+        }, command, executionTimeout);
+    }
+
+
+    public static String readStreamUntilEnd(final ProcessLauncher processLauncher, final InputStream inputStream) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         StringBuilder builder = new StringBuilder();
         String line;
 
-        while (process.isAlive() && !Thread.currentThread().isInterrupted() && (line = reader.readLine()) != null) {
+        while (processLauncher.isAlive() && !Thread.currentThread().isInterrupted() && (line = reader.readLine()) != null) {
             builder.append(line).append(System.getProperty("line.separator"));
         }
 

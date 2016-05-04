@@ -13,7 +13,7 @@ BrowserStackLocalLauncher launcher = new BrowserStackLocal("<browserstack-access
     .setForce(true)                        // Kill other running BrowserstackLocal instances before launch
     .setOnlyAutomate(true)                 // Disable Live Testing and Screenshots, just test Automate
     .setForceLocal(true)                   // Route all traffic via local machine
-    .setOnly("localhost,3000,0")             // Restrict Local Testing access to specified local servers and/or folders
+    .setOnly("localhost,3000,0")           // Restrict Local Testing access to specified local servers and/or folders
     .setHosts("localhost,3000,0")          // List of hosts and ports where Local must be enabled for e.g. localhost,3000,1,localhost,3001,0
     .setProxy("proxy.example.com", 3128, "username", "password")  // (optional) Network proxy used to access www.browserstack.com
     .start();
@@ -26,7 +26,6 @@ launcher.stop();
 
 Apart from the key, all other BrowserStack Local modifiers are optional. For the full list of modifiers, refer [BrowserStack Local modifiers](https://www.browserstack.com/local-testing#modifiers). For examples, refer below -
 
-<<<<<<< HEAD
 #### Verbose Logging
 To enable verbose logging -
 ```

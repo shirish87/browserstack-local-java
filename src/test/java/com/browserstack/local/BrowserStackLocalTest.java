@@ -91,13 +91,7 @@ public class BrowserStackLocalTest {
     public void testOptionForceLocal() {
         try {
             BrowserStackLocalLauncher launcher = new BrowserStackLocal(accessKey)
-                    .setLocalIdentifier("server-1")
-                    .setForce(true)
-                    .setOnlyAutomate(true)
                     .setForceLocal(true)
-                    .setOnly("localhost,3000")
-                    .setProxy("proxy.example.com", 3128, "username", "password")
-                    .setHosts("localhost,3000,0")
                     .start();
 
             assertOption(launcher, "-forcelocal", true);

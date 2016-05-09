@@ -96,6 +96,12 @@ public class BrowserStackLocal {
         }
     }
 
+    /**
+     * Kills the launched BrowserStackLocal tunnel instance
+     *
+     * @return an instance of {@link BrowserStackLocalCmdResult} containing result of command execution.
+     * @throws BrowserStackLocalException
+     */
     public BrowserStackLocalCmdResult stop() throws BrowserStackLocalException {
         checkState();
 
@@ -108,11 +114,21 @@ public class BrowserStackLocal {
         }
     }
 
+    /**
+     * Returns the result of the launch command {@link BrowserStackLocalLauncher#start}.
+     *
+     * @return an instance of {@link BrowserStackLocalCmdResult} containing result of {@link BrowserStackLocalLauncher#start} execution.
+     */
     public BrowserStackLocalCmdResult getLaunchResult() {
         checkState();
         return startResult;
     }
 
+    /**
+     * Returns true if BrowserStackLocal was successfully stopped by the last call to {@link BrowserStackLocal#stop}.
+     *
+     * @return true or false based on successful {@link BrowserStackLocal#stop}.
+     */
     public boolean isStopped() {
         return (startResult == null || isStopped);
     }

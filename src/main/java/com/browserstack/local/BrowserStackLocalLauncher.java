@@ -174,17 +174,6 @@ public class BrowserStackLocalLauncher {
     }
 
     /**
-     * Set hosts for the BrowserStackLocal instance.
-     *
-     * @param hosts Hosts to be passed to the -hosts flag
-     * @return current instance of {@link BrowserStackLocalLauncher} for chaining.
-     */
-    public BrowserStackLocalLauncher setHosts(String hosts) {
-        instance.getOptions().add(new LocalOption(LocalFlag.HOSTS, hosts));
-        return this;
-    }
-
-    /**
      * Passes additional arguments to the BrowserStackLocal binary.
      *
      * @param argument Any additional arguments to be passed to BrowserStackLocal binary.

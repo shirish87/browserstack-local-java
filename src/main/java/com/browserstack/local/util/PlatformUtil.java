@@ -40,7 +40,6 @@ public class PlatformUtil {
         process.start(command);
 
         final Thread streamOutThread = new Thread(new Runnable() {
-            @Override
             public void run() {
                 try {
                     results[0] = readStreamUntilEnd(process, process.stdout());
@@ -58,7 +57,6 @@ public class PlatformUtil {
         });
 
         final Thread streamErrThread = new Thread(new Runnable() {
-            @Override
             public void run() {
                 try {
                     String output = readStreamUntilEnd(process, process.stderr());
@@ -68,7 +66,7 @@ public class PlatformUtil {
 
                     if (output.contains(STATUS_SUCCESS)) {
                         results[0] = output;
-                    } else if (exceptions[0] == null && !output.isEmpty()) {
+                    } else if (exceptions[0] == null && output.length() > 0) {
                         exceptions[0] = new BrowserStackLocalException(output, true);
                     }
                 } catch (IOException e) {
@@ -117,12 +115,10 @@ public class PlatformUtil {
         return execCommand(new ProcessLauncher() {
             private Process process;
 
-            @Override
             public void start(String[] command) throws IOException {
                 process = new ProcessBuilder(command).start();
             }
 
-            @Override
             public boolean isAlive() throws IOException {
                 if (process != null) {
                     try {
@@ -136,7 +132,6 @@ public class PlatformUtil {
                 return false;
             }
 
-            @Override
             public void join(long executionTimeout, TimeUnit timeUnit) throws IOException {
                 if (process != null) {
                     try {
@@ -147,19 +142,16 @@ public class PlatformUtil {
                 }
             }
 
-            @Override
             public void kill() throws IOException {
                 if (process != null) {
                     process.destroy();
                 }
             }
 
-            @Override
             public InputStream stdout() {
                 return (process != null) ? process.getInputStream() : null;
             }
 
-            @Override
             public InputStream stderr() {
                 return (process != null) ? process.getErrorStream() : null;
             }

@@ -1,8 +1,8 @@
-# BrowserStackLocal for Java
+# BrowserStack Local for Java
 
 [![Build Status](https://travis-ci.org/browserstack/browserstack-local-java.svg?branch=master)](https://travis-ci.org/browserstack/browserstack-local-java)
 
-Launches [BrowserStackLocal](https://www.browserstack.com/local-testing) tunnels enabling access to local web servers and file folders from [BrowserStack](https://www.browserstack.com).
+Launches [BrowserStack Local](https://www.browserstack.com/local-testing) tunnels enabling access to local web servers and file folders from [BrowserStack](https://www.browserstack.com).
 
 
 ## Usage
@@ -14,92 +14,22 @@ BrowserStackLocal browserstackLocal = new BrowserStackLocalLauncher("<browsersta
     .setOnlyAutomate(true)                 // Disable Live Testing and Screenshots, just test Automate
     .setForceLocal(true)                   // Route all traffic via local machine
     .setOnly("localhost,3000,0")           // Restrict Local Testing access to specified local servers and/or folders
-    .setHosts("localhost,3000,0")          // List of hosts and ports where Local must be enabled for e.g. localhost,3000,1,localhost,3001,0
     .setProxy("proxy.example.com", 3128, "username", "password")  // (optional) Network proxy used to access www.browserstack.com
     .start();
 ```
 
 ```
-// Terminate BrowserStackLocal
+// Terminate BrowserStack Local
 browserstackLocal.stop();
 ```
 
 Apart from the key, all other BrowserStack Local modifiers are optional. For the full list of modifiers, refer [BrowserStack Local modifiers](https://www.browserstack.com/local-testing#modifiers). For examples, refer below -
 
-#### Verbose Logging
-To enable verbose logging -
-```
-bsLocalArgs.put("v", "true");
-```
-
-#### Folder Testing
-To test local folder rather internal server, provide path to folder as value of this option -
-```
-bsLocalArgs.put("f", "/my/awesome/folder");
-```
-
-#### Force Start
-To kill other running Browserstack Local instances -
-```
-bsLocalArgs.put("force", "true");
-```
-
-#### Only Automate
-To disable local testing for Live and Screenshots, and enable only Automate -
-```
-bsLocalArgs.put("onlyAutomate", "true");
-```
-
-#### Force Local
-To route all traffic via local(your) machine -
-```
-bsLocalArgs.put("forcelocal", "true");
-```
-
-#### Proxy
-To use a proxy for local testing -
-
-* proxyHost: Hostname/IP of proxy, remaining proxy options are ignored if this option is absent
-* proxyPort: Port for the proxy, defaults to 3128 when -proxyHost is used
-* proxyUser: Username for connecting to proxy (Basic Auth Only)
-* proxyPass: Password for USERNAME, will be ignored if USERNAME is empty or not specified
-
-```
-bsLocalArgs.put("proxyHost", "127.0.0.1");
-bsLocalArgs.put("proxyPort", "8000");
-bsLocalArgs.put("proxyUser", "user");
-bsLocalArgs.put("proxyPass", "password");
-```
-
-#### Local Identifier
-If doing simultaneous multiple local testing connections, set this uniquely for different processes -
-```
-bsLocalArgs.put("localIdentifier", "randomstring");
-```
-
-## Additional Arguments
-
-#### Binary Path
-
-By default, BrowserStack local wrappers try downloading and executing the latest version of BrowserStack binary in ~/.browserstack or the present working directory or the tmp folder by order. But you can override these by passing the -binarypath argument.
-Path to specify local Binary path -
-```
-bsLocalArgs.put("binarypath", "/browserstack/BrowserStackLocal");
-```
-
-#### Logfile
-To save the logs to the file while running with the '-v' argument, you can specify the path of the file. By default the logs are saved in the local.log file in the present woring directory.
-To specify the path to file where the logs will be saved -
-```
-bsLocalArgs.put("v", "true");
-bsLocalArgs.put("logfile", "/browserstack/logs.txt");
-```
-
 ## Contribute
 
 ### Compile Instructions
 
-To compile the package, `mvn compile`.
+To compile the package, `mvn package`.
 
 To run the test suite run, `mvn test`.
 

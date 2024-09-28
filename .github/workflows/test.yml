@@ -12,11 +12,12 @@ env:
 jobs:
   test:
     strategy:
+      max-parallel: 2
       matrix:
         os: [windows-latest, macos-latest, ubuntu-latest]
-        jdk: [8, 17, 21]
+        jdk: [8, 11, 17]
 
-    name: "node.js lts ${{ matrix.os }}"
+    name: "JDK ${{ matrix.jdk }} on ${{ matrix.os }}"
     runs-on: ${{ matrix.os }}
     environment: default
     timeout-minutes: 10

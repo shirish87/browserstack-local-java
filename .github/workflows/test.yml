@@ -1,0 +1,36 @@
+name: test-gzip
+
+on:
+  push:
+    branches: [gzip]
+  workflow_dispatch:
+
+env:
+  BROWSERSTACK_LOCAL_BIN_URL: "${{ env.BROWSERSTACK_LOCAL_BIN_URL }}"
+  BROWSERSTACK_ACCESS_KEY: "${{ secrets.BROWSERSTACK_ACCESS_KEY }}"
+  BROWSERSTACK_LOCAL_DEBUG_GZIP: "true"
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        jdk: [8, 17, 21]
+
+    name: "node.js lts ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    environment: default
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Set up JDK ${{ matrix.jdk }}"
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "${{ matrix.jdk }}"
+          cache: "maven"
+
+      - name: Test with Maven
+        run: mvn clean test

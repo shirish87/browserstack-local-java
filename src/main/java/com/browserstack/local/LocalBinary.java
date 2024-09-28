@@ -1,12 +1,13 @@
 package com.browserstack.local;
 
 import org.apache.commons.io.FileUtils;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.File;
+
+import java.io.*;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipException;
 
 class LocalBinary {
 
@@ -174,7 +175,7 @@ class LocalBinary {
             URL url = new URL(httpPath);
 
             File f = new File(source);
-            FileUtils.copyURLToFile(url, f);
+            newCopyToFile(url, f);
 
             changePermissions(binaryPath);
         } catch (Exception e) {
@@ -191,5 +192,27 @@ class LocalBinary {
 
     public String getBinaryPath() {
         return binaryPath;
+    }
+
+    private static void newCopyToFile(URL url, File f) throws IOException {
+        URLConnection conn = url.openConnection();
+        conn.setRequestProperty("User-Agent", "browserstack-local-java/" + Local.getPackageVersion());
+        conn.setRequestProperty("Accept-Encoding", "gzip, *");
+        String contentEncoding = conn.getContentEncoding();
+
+        if (contentEncoding == null || !contentEncoding.toLowerCase().contains("gzip")) {
+            FileUtils.copyToFile(conn.getInputStream(), f);
+            return;
+        }
+
+        try (InputStream stream = new GZIPInputStream(conn.getInputStream())) {
+            if (System.getenv().containsKey("BROWSERSTACK_LOCAL_DEBUG_GZIP")) {
+                System.out.println("using gzip in " + conn.getRequestProperty("User-Agent"));
+            }
+
+            FileUtils.copyToFile(stream, f);
+        } catch (ZipException e) {
+            FileUtils.copyURLToFile(url, f);
+        }
     }
 }

@@ -1,0 +1,41 @@
+name: test-gzip
+
+on:
+  push:
+    branches: [pr-gzip-test]
+  workflow_dispatch:
+
+env:
+  BROWSERSTACK_ACCESS_KEY: "${{ secrets.BROWSERSTACK_ACCESS_KEY }}"
+  BROWSERSTACK_LOCAL_DEBUG_GZIP: "true"
+  BROWSERSTACK_LOCAL_BIN_URL: "${{ secrets.BROWSERSTACK_LOCAL_BIN_URL }}"
+
+jobs:
+  test:
+    continue-on-error: true
+    strategy:
+      max-parallel: 2
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        jdk: [8, 11, 17]
+        exclude:
+          - os: macos-latest
+            jdk: 8
+
+    name: "JDK ${{ matrix.jdk }} on ${{ matrix.os }}"
+    runs-on: ${{ matrix.os }}
+    environment: default
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "Set up JDK ${{ matrix.jdk }}"
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "${{ matrix.jdk }}"
+          cache: "maven"
+
+      - name: Test with Maven
+        run: mvn clean test
